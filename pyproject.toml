@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qkd-skeptics-toolkit"
+version = "0.1.0"
+description = "A skeptic's toolkit for QKD claims: a scored evidence questionnaire plus TLS scanning of the classical key-management interfaces."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Eddie Garcia" }]
+dependencies = [
+    "pqc-readiness-audit @ git+https://github.com/garciaedd275/pqc-readiness-audit.git",
+    "click>=8.1",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+qkd-skeptic = "qkd_skeptics.cli:cli"
+
+[tool.setuptools.packages.find]
+include = ["qkd_skeptics*"]
+
+[tool.setuptools.package-data]
+qkd_skeptics = ["questions.yaml"]

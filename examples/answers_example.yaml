@@ -1,0 +1,17 @@
+# Illustrative answers for a fictional vendor, to show what the report looks like.
+vendor: Example QKD Vendor (fictional)
+claim: "Our QKD link makes your network unhackable and quantum-proof."
+endpoints: []     # e.g. [{hostname: kme.example.com, port: 443}] - authorized hosts only
+answers:
+  C1: {answer: "yes", note: "Brochure says 'unhackable'"}
+  C2: {answer: "no", note: "Claim covers the whole network"}
+  A1: {answer: "yes"}
+  A2: {answer: "yes", note: "Two trusted relay sites"}
+  A3: {answer: unknown}
+  A4: {answer: unknown}
+  B1: {answer: "yes"}
+  B2: {answer: unknown, note: "Vendor would not say how the link is authenticated"}
+  K1: {answer: "yes", note: "ETSI GS QKD 014 interface"}
+  U1: {answer: "yes"}
+  U2: {answer: "no", note: "QKD keys used alone"}
+  E1: {answer: "no", note: "No third-party evaluation"}

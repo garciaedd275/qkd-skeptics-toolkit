@@ -1,0 +1,159 @@
+# QKD claims question bank
+# ========================
+# Each question has an `expected` answer (yes|no). A different answer is a
+# finding; `unknown` or a missing answer is "unverified" (the vendor has not
+# demonstrated it). `weight` (1-3) is how much a miss matters; weight-3 misses
+# are treated as critical gaps. `applies_if` makes a question conditional on
+# an earlier answer.
+#
+# Sources behind the questions (verify current wording before citing):
+#   - NSA, "Quantum Key Distribution (QKD) and Quantum Cryptography" - does not
+#     recommend QKD for National Security Systems; cites dedicated hardware/fiber,
+#     trusted relays, authentication needs, and limited upgradability.
+#   - ANSSI/BSI et al. joint position paper on QKD - niche use only; PQC first;
+#     QKD at most as defense-in-depth on point-to-point links.
+#   - UK NCSC statement on QKD (2020) - cautions against sole reliance.
+#   - ETSI GS QKD 014 (key delivery REST API), ETSI GS QKD 016 (protection
+#     profile), ISO/IEC 23837 (QKD module security evaluation).
+
+questions:
+  - id: C1
+    category: Claim language
+    text: Does the vendor describe the system as "unhackable", "unbreakable" or "quantum-proof" without qualification?
+    expected: "no"
+    weight: 2
+    why: Security depends on hardware and implementation, not physics alone. Unqualified claims are a red flag.
+
+  - id: C2
+    category: Claim language
+    text: Is the claim scoped to a specific link or segment, not the whole system?
+    expected: "yes"
+    weight: 2
+    why: QKD protects key establishment on one link. Everything outside that link keeps its own risks.
+
+  - id: A1
+    category: Architecture
+    text: Are the physical link type (fiber or free-space/satellite) and maximum distance documented?
+    expected: "yes"
+    weight: 1
+    why: QKD needs dedicated fiber or managed free-space links with limited range. Undocumented links suggest no real deployment.
+
+  - id: A2
+    category: Architecture
+    text: Does any segment rely on trusted relay nodes?
+    expected: "no"
+    weight: 3
+    why: Trusted relays see the keys in the clear, so they become high-value insider and physical targets (NSA objection).
+
+  - id: A3
+    category: Architecture
+    applies_if: {A2: "yes"}
+    text: Are trusted relay nodes physically secured, monitored, and inside the audit scope?
+    expected: "yes"
+    weight: 3
+    why: If relays are used, the whole security argument rests on them.
+
+  - id: A4
+    category: Architecture
+    text: Is there a documented fallback if the quantum link is disrupted (fiber cut, or eavesdropping detection tripping)?
+    expected: "yes"
+    weight: 2
+    why: Eavesdropping detection turns any tampering into a denial of service (ANSSI/BSI). Without fallback, availability suffers or keys are bypassed.
+
+  - id: B1
+    category: Authentication
+    text: Is the classical channel used for QKD post-processing authenticated?
+    expected: "yes"
+    weight: 3
+    why: Without authentication, QKD is open to man-in-the-middle attack. This is a core requirement.
+
+  - id: B2
+    category: Authentication
+    text: Is that authentication quantum-safe (information-theoretic MACs with pre-shared keys, or PQC) and not RSA/ECDSA?
+    expected: "yes"
+    weight: 3
+    why: Authenticating a quantum-safe key exchange with breakable signatures defeats the purpose.
+
+  - id: B3
+    category: Authentication
+    text: Is provisioning and refresh of the initial authentication keys documented and controlled?
+    expected: "yes"
+    weight: 2
+    why: QKD needs a pre-shared secret to bootstrap authentication. Its handling is a key dependency.
+
+  - id: K1
+    category: Key delivery
+    text: Does the key-delivery interface follow a published standard (e.g. ETSI GS QKD 014)?
+    expected: "yes"
+    weight: 1
+    why: Standard interfaces allow independent testing and integration.
+
+  - id: K2
+    category: Key delivery
+    text: Is the key-delivery / key-management interface protected by TLS 1.2+ with strong authentication?
+    expected: "yes"
+    weight: 2
+    why: Keys cross this classical interface. Weak transport protection exposes them. See the automated endpoint scan below.
+
+  - id: U1
+    category: Key usage
+    text: Are QKD-derived keys used with a strong cipher (AES-256 or equivalent)?
+    expected: "yes"
+    weight: 2
+    why: A perfect key delivered to a weak cipher gives weak protection.
+
+  - id: U2
+    category: Key usage
+    text: Are QKD keys combined with PQC or classical keys (defense in depth), not used alone?
+    expected: "yes"
+    weight: 2
+    why: ANSSI accepts QKD only as defense-in-depth alongside classical or PQC protection.
+
+  - id: U3
+    category: Key usage
+    text: Does the same data also travel over links protected only by RSA/ECDH key exchange that the QKD claim does not cover?
+    expected: "no"
+    weight: 3
+    why: Harvest-now-decrypt-later targets the weakest path. A QKD segment does not help if the same data crosses a breakable one.
+
+  - id: E1
+    category: Evidence
+    text: Has the system been independently evaluated (e.g. ISO/IEC 23837-based Common Criteria evaluation, ETSI GS QKD 016 protection profile)?
+    expected: "yes"
+    weight: 3
+    why: Without third-party evaluation, security claims are the vendor's own.
+
+  - id: E2
+    category: Evidence
+    text: Has the hardware had independent penetration and side-channel testing (e.g. detector-blinding attacks)?
+    expected: "yes"
+    weight: 2
+    why: Practical QKD attacks target implementation flaws in detectors and optics, not the protocol.
+
+  - id: E3
+    category: Evidence
+    text: Are key rate, error rate (QBER) and uptime measured and available for audit?
+    expected: "yes"
+    weight: 1
+    why: Operating metrics show whether the link works as claimed.
+
+  - id: O1
+    category: Operations
+    text: Is there a process for patching, updating or replacing the QKD hardware and firmware?
+    expected: "yes"
+    weight: 2
+    why: QKD is hardware-based and hard to upgrade (NSA objection). Lifecycle needs a plan.
+
+  - id: O2
+    category: Operations
+    text: Is supply-chain provenance of the QKD hardware documented?
+    expected: "yes"
+    weight: 1
+    why: Specialized hardware from few vendors is a supply-chain concentration risk.
+
+  - id: O3
+    category: Operations
+    text: Is there a PQC migration plan for the organization regardless of QKD?
+    expected: "yes"
+    weight: 2
+    why: Agencies prioritize PQC. QKD is not a substitute for it.
