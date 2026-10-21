@@ -58,8 +58,8 @@ questions:
     category: Architecture
     text: Does any segment rely on trusted relay nodes?
     expected: "no"
-    weight: 3
-    why: Over long distances fiber QKD needs trusted nodes, so end-to-end security is not achieved, and in most current implementations satellites are themselves trusted nodes (joint paper). Relays see the keys, so they are high-value targets.
+    weight: 2
+    why: Over long distances fiber QKD needs trusted nodes, so end-to-end security is not achieved, and in most current implementations satellites are themselves trusted nodes (joint paper). Relays see the keys, so they are high-value targets. Using them is common at range, so this is weighted below the relay-security question (A3).
 
   - id: A3
     category: Architecture
@@ -111,6 +111,20 @@ questions:
     weight: 2
     why: Keys cross this classical interface. Weak transport protection exposes them. See the automated endpoint scan below.
 
+  - id: K3
+    category: Key delivery
+    text: Are QKD-derived keys stored and handled in access-controlled, audited key management (e.g. HSM-grade), with logging of key use?
+    expected: "yes"
+    weight: 2
+    why: A perfectly generated key is only as safe as the system that stores and distributes it after delivery.
+
+  - id: K4
+    category: Key delivery
+    text: Are key lifetime and rotation rules defined for QKD-derived keys?
+    expected: "yes"
+    weight: 1
+    why: Long-lived keys increase exposure if a single device or relay is compromised.
+
   - id: U1
     category: Key usage
     text: Are QKD-derived keys used with a strong cipher (AES-256 or equivalent)?
@@ -159,6 +173,13 @@ questions:
     expected: "yes"
     weight: 1
     why: Operating metrics show whether the link works as claimed.
+
+  - id: R1
+    category: Evidence
+    text: Has the random number generator inside the QKD modules been independently evaluated or tested?
+    expected: "yes"
+    weight: 1
+    why: Random number generators are part of the QKD module (joint paper, Figure 1). Biased randomness weakens basis and key selection.
 
   - id: O1
     category: Operations

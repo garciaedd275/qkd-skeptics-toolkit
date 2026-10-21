@@ -4,7 +4,7 @@ A toolkit for testing **claims** about quantum key distribution (QKD). It does
 not and cannot verify the physics of a QKD system; that needs independent lab
 testing. What it can check is everything around the physics:
 
-1. **Is the claim scoped and evidenced?** A scored questionnaire (23 questions,
+1. **Is the claim scoped and evidenced?** A scored questionnaire (26 questions,
    editable in `qkd_skeptics/questions.yaml`) covering claim language,
    architecture (trusted relays, fallback), authentication, key delivery,
    key usage, independent evaluation and operations. Each question states why

@@ -52,7 +52,9 @@ def test_conditional_question_activates_when_trusted_relays_used():
     results, _, rating = qkd.score_answers(qkd.load_questions(), answers)
     assert next(r for r in results if r.question.id == "A3").status == "unverified"
     assert next(r for r in results if r.question.id == "A2").status == "gap"
-    assert rating == "Critical gaps"  # A2 is weight 3
+    # Relays alone are not critical (A2 is weight 2), but unverified relay
+    # security (A3, weight 3) caps the rating.
+    assert rating == "Partially evidenced"
 
 
 def test_invalid_answer_and_unknown_id_rejected():
@@ -103,3 +105,38 @@ def test_cli_assess_rejects_bad_answer(tmp_path):
     answers.write_text("answers:\n  C1: {answer: maybe}\n")
     result = CliRunner().invoke(cli, ["assess", str(answers), "-o", str(tmp_path / "r.md"), "--no-scan"])
     assert result.exit_code == 1
+
+
+def test_unverified_critical_question_caps_rating():
+    qs = qkd.load_questions()
+    answers = _all(True)
+    answers["E1"] = {"answer": "unknown"}  # no independent evaluation shown
+    _, score, rating = qkd.score_answers(qs, answers)
+    assert score >= 80  # points alone would say "Well evidenced"
+    assert rating == "Partially evidenced"
+
+
+def test_secured_trusted_relays_are_not_a_critical_gap():
+    qs = qkd.load_questions()
+    answers = _all(True)
+    answers["A2"] = {"answer": "yes"}  # relays used
+    answers["A3"] = {"answer": "yes"}  # and secured
+    results, _, rating = qkd.score_answers(qs, answers)
+    assert next(r for r in results if r.question.id == "A2").status == "gap"
+    assert rating != "Critical gaps"
+
+
+def test_unsecured_trusted_relays_are_critical():
+    qs = qkd.load_questions()
+    answers = _all(True)
+    answers["A2"] = {"answer": "yes"}
+    answers["A3"] = {"answer": "no"}
+    _, _, rating = qkd.score_answers(qs, answers)
+    assert rating == "Critical gaps"
+
+
+def test_report_explains_rating_cap():
+    answers = _all(True)
+    answers["E1"] = {"answer": "unknown"}
+    text = qkd.render_markdown(qkd.assess({"vendor": "V", "claim": "c", "answers": answers}, scan=False))
+    assert "capped at" in text and "E1" in text

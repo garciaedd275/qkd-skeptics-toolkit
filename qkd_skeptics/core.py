@@ -141,11 +141,14 @@ def score_answers(questions: list[Question], answers: dict) -> tuple[list[Questi
     score = round(100 * met_weight / applicable_weight, 1) if applicable_weight else 0.0
 
     critical_gap = any(r.status == "gap" and r.question.weight >= 3 for r in results)
+    critical_unverified = any(r.status == "unverified" and r.question.weight >= 3 for r in results)
     if critical_gap:
         rating = "Critical gaps"
-    elif score >= 80:
+    elif score >= 80 and not critical_unverified:
         rating = "Well evidenced"
     elif score >= 50:
+        # Also reached when score >= 80 but a weight-3 question is unverified:
+        # a vendor cannot be "well evidenced" while hiding critical evidence.
         rating = "Partially evidenced"
     else:
         rating = "Weakly evidenced"
@@ -212,6 +215,10 @@ def render_markdown(a: QkdAssessment) -> str:
         f"- **{len(a.critical_gaps)}** critical gap(s), **{len(a.gaps)}** gap(s) in total, "
         f"**{len(a.unverified)}** unverified question(s).",
     ]
+    critical_unverified = [r for r in a.unverified if r.question.weight >= 3]
+    if critical_unverified:
+        ids = ", ".join(r.question.id for r in critical_unverified)
+        out.append(f"- Rating is capped at \"Partially evidenced\" because critical question(s) are unverified: **{ids}**.")
     vulnerable = sum(1 for e in a.endpoints for f in e.findings if f.classification == Classification.VULNERABLE)
     if a.endpoints:
         out.append(f"- Key-management endpoints scanned: **{len(a.endpoints)}**, with **{vulnerable}** quantum-vulnerable or weak algorithm finding(s).")

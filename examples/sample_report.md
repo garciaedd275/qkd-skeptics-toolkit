@@ -2,22 +2,23 @@
 
 **Vendor / product:** Example QKD Vendor (fictional)
 **Claim assessed:** Our QKD link makes your network unhackable and quantum-proof.
-**Evidence score:** 14.6% — **Critical gaps**
+**Evidence score:** 13.7% — **Critical gaps**
 
 This assessment tests whether a QKD claim is scoped and evidenced. It does not verify the physics: hardware and side-channel security need independent lab testing.
 
 ## Summary
 
-- **2** critical gap(s), **5** gap(s) in total, **14** unverified question(s).
+- **1** critical gap(s), **5** gap(s) in total, **17** unverified question(s).
+- Rating is capped at "Partially evidenced" because critical question(s) are unverified: **A3, B2, U3**.
 
 ## Gaps (answer contradicts a secure design)
 
 | ID | Category | Question | Answer | Weight | Why it matters |
 |---|---|---|---|---|---|
-| A2 | Architecture | Does any segment rely on trusted relay nodes? | yes (Two trusted relay sites) | 3 | Over long distances fiber QKD needs trusted nodes, so end-to-end security is not achieved, and in most current implementations satellites are themselves trusted nodes (joint paper). Relays see the keys, so they are high-value targets. |
 | E1 | Evidence | Has the system been independently evaluated (e.g. ISO/IEC 23837-based Common Criteria evaluation, ETSI GS QKD 016 protection profile)? | no (No third-party evaluation) | 3 | The joint paper says devices need rigorous evaluation because physical attacks exist. A Common Criteria protection profile (ETSI GS QKD 016, developed with BSI) and ISO/IEC 23837-1/-2 (2023) exist, but the paper says an evaluation methodology for physical attacks is still to be developed. |
 | C1 | Claim language | Does the vendor describe the system as "unhackable", "unbreakable" or "quantum-proof" without qualification? | yes (Brochure says 'unhackable') | 2 | The joint paper says claims of "absolute" or "unconditional" security can never apply to actual implementations; several commercial QKD systems have been broken through their physical devices. |
 | C2 | Claim language | Is the claim scoped to a specific link or segment, not the whole system? | no (Claim covers the whole network) | 2 | QKD protects key establishment on one link. Everything outside that link keeps its own risks. |
+| A2 | Architecture | Does any segment rely on trusted relay nodes? | yes (Two trusted relay sites) | 2 | Over long distances fiber QKD needs trusted nodes, so end-to-end security is not achieved, and in most current implementations satellites are themselves trusted nodes (joint paper). Relays see the keys, so they are high-value targets. Using them is common at range, so this is weighted below the relay-security question (A3). |
 | U2 | Key usage | Are QKD keys combined with other keying (PQC hybrid or pre-shared symmetric keys), not relied on alone? | no (QKD keys used alone) | 2 | The joint paper's clear priority is PQC in hybrid with traditional keying. Sole reliance on QKD carries its implementation and availability risks. |
 
 ## Unverified (vendor has not demonstrated)
@@ -32,11 +33,14 @@ This assessment tests whether a QKD claim is scoped and evidenced. It does not v
 | A4 | Architecture | Is there a documented fallback if the quantum link is disrupted (fiber cut, or eavesdropping detection tripping)? | unknown | 2 | Every eavesdropping attempt, and any interference with the channel, becomes a denial of service, and protecting against it is still unstudied (joint paper). Without a fallback, availability suffers or keys are bypassed. |
 | B3 | Authentication | Is provisioning and refresh of the initial authentication keys documented and controlled? | unknown | 2 | Pre-shared authentication keys must be distributed and periodically renewed securely before QKD can run (joint paper). |
 | K2 | Key delivery | Is the key-delivery / key-management interface protected by TLS 1.2+ with strong authentication? | unknown | 2 | Keys cross this classical interface. Weak transport protection exposes them. See the automated endpoint scan below. |
+| K3 | Key delivery | Are QKD-derived keys stored and handled in access-controlled, audited key management (e.g. HSM-grade), with logging of key use? | unknown | 2 | A perfectly generated key is only as safe as the system that stores and distributes it after delivery. |
 | P1 | Evidence | Is the protocol's security proof published, covering finite key sizes and realistic loss and detector imperfections? | unknown | 2 | The joint paper says no QKD protocol has been standardised and no proof for a practically relevant protocol meets these requirements. Some commercial protocols lacked sufficient proofs and were later shown insecure. |
 | E2 | Evidence | Has the hardware had independent penetration and side-channel testing (e.g. detector-blinding attacks)? | unknown | 2 | Practical attacks target implementation flaws in detectors and optics (e.g. bright-illumination attacks on commercial systems cited in the joint paper), not the protocol. |
 | O1 | Operations | Is there a process for patching, updating or replacing the QKD hardware and firmware? | unknown | 2 | QKD needs specialised hardware with very high life-cycle costs (joint paper) and cannot be patched like software (NSA objection, from secondary summaries). Lifecycle needs a plan. |
 | O3 | Operations | Is there a PQC migration plan for the organization regardless of QKD? | unknown | 2 | The joint paper says the clear priority is migrating to PQC, which runs on classical hardware. QKD is not a substitute. |
+| K4 | Key delivery | Are key lifetime and rotation rules defined for QKD-derived keys? | unknown | 1 | Long-lived keys increase exposure if a single device or relay is compromised. |
 | E3 | Evidence | Are key rate, error rate (QBER) and uptime measured and available for audit? | unknown | 1 | Operating metrics show whether the link works as claimed. |
+| R1 | Evidence | Has the random number generator inside the QKD modules been independently evaluated or tested? | unknown | 1 | Random number generators are part of the QKD module (joint paper, Figure 1). Biased randomness weakens basis and key selection. |
 | O2 | Operations | Is supply-chain provenance of the QKD hardware documented? | unknown | 1 | Specialized hardware from few vendors is a supply-chain concentration risk. |
 
 ## Requirements met
