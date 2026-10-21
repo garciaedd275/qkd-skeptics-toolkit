@@ -31,8 +31,12 @@ document status varies, so check ETSI and ISO directly.
 
 ```bash
 # macOS / Kali (PEP 668): use pipx
-pipx install git+https://github.com/garciaedd275/qkd-skeptics-toolkit.git
+pipx install --python python3.13 git+https://github.com/garciaedd275/qkd-skeptics-toolkit.git
 ```
+
+Use Python 3.10-3.13 (tested on 3.13). If your default `python3` is newer
+(Homebrew moved to 3.15), the install fails with "ResolutionImpossible"
+because `sslyze` has no compatible build yet; the `--python` flag fixes it.
 
 For development: `pip install -e ~/pqc-readiness-audit && pip install -e ".[dev]"`.
 
