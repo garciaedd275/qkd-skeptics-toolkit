@@ -6,15 +6,17 @@
 # are treated as critical gaps. `applies_if` makes a question conditional on
 # an earlier answer.
 #
-# Sources behind the questions (verify current wording before citing):
-#   - NSA, "Quantum Key Distribution (QKD) and Quantum Cryptography" - does not
-#     recommend QKD for National Security Systems; cites dedicated hardware/fiber,
-#     trusted relays, authentication needs, and limited upgradability.
-#   - ANSSI/BSI et al. joint position paper on QKD - niche use only; PQC first;
-#     QKD at most as defense-in-depth on point-to-point links.
-#   - UK NCSC statement on QKD (2020) - cautions against sole reliance.
-#   - ETSI GS QKD 014 (key delivery REST API), ETSI GS QKD 016 (protection
-#     profile), ISO/IEC 23837 (QKD module security evaluation).
+# Sources behind the questions:
+#   - PRIMARY (read in full): "Position Paper on Quantum Key Distribution",
+#     joint paper by ANSSI (France), BSI (Germany), NLNCSA (Netherlands) and the
+#     Swedish NCSA/Armed Forces. Cited below as "joint paper".
+#   - NSA, "Quantum Key Distribution (QKD) and Quantum Cryptography". NOT read
+#     directly (the site blocked automated access); NSA points come from secondary
+#     summaries. Verify against the NSA page before quoting.
+#   - UK NCSC "Quantum security technologies" (2020): not read directly.
+#   - ETSI GS QKD 014 (key delivery API); ETSI GS QKD 016 (Common Criteria
+#     protection profile for prepare-and-measure QKD, developed with BSI);
+#     ISO/IEC 23837-1 and -2 (published 2023, per the joint paper).
 
 questions:
   - id: C1
@@ -22,7 +24,7 @@ questions:
     text: Does the vendor describe the system as "unhackable", "unbreakable" or "quantum-proof" without qualification?
     expected: "no"
     weight: 2
-    why: Security depends on hardware and implementation, not physics alone. Unqualified claims are a red flag.
+    why: The joint paper says claims of "absolute" or "unconditional" security can never apply to actual implementations; several commercial QKD systems have been broken through their physical devices.
 
   - id: C2
     category: Claim language
@@ -31,19 +33,33 @@ questions:
     weight: 2
     why: QKD protects key establishment on one link. Everything outside that link keeps its own risks.
 
+  - id: C3
+    category: Claim language
+    text: Does the vendor claim "absolute" or information-theoretic security while the QKD keys are used with AES or a similar cipher, not a one-time pad?
+    expected: "no"
+    weight: 2
+    why: Absolute security needs a one-time pad, which needs a QKD key rate equal to the data rate. With AES the claim no longer holds (joint paper).
+
+  - id: J1
+    category: Use case
+    text: Can the vendor show why PQC or pre-shared symmetric keys cannot meet this requirement, so the cost of QKD is justified?
+    expected: "yes"
+    weight: 2
+    why: The joint paper says QKD is only relevant where the security requirement justifies its very high costs and cheaper options are not feasible.
+
   - id: A1
     category: Architecture
     text: Are the physical link type (fiber or free-space/satellite) and maximum distance documented?
     expected: "yes"
     weight: 1
-    why: QKD needs dedicated fiber or managed free-space links with limited range. Undocumented links suggest no real deployment.
+    why: Fiber QKD reaches roughly 100 km commercially and a few hundred km in demonstrations, and satellite links are limited by orbit and weather (joint paper). Undocumented links suggest no real deployment.
 
   - id: A2
     category: Architecture
     text: Does any segment rely on trusted relay nodes?
     expected: "no"
     weight: 3
-    why: Trusted relays see the keys in the clear, so they become high-value insider and physical targets (NSA objection).
+    why: Over long distances fiber QKD needs trusted nodes, so end-to-end security is not achieved, and in most current implementations satellites are themselves trusted nodes (joint paper). Relays see the keys, so they are high-value targets.
 
   - id: A3
     category: Architecture
@@ -58,7 +74,7 @@ questions:
     text: Is there a documented fallback if the quantum link is disrupted (fiber cut, or eavesdropping detection tripping)?
     expected: "yes"
     weight: 2
-    why: Eavesdropping detection turns any tampering into a denial of service (ANSSI/BSI). Without fallback, availability suffers or keys are bypassed.
+    why: Every eavesdropping attempt, and any interference with the channel, becomes a denial of service, and protecting against it is still unstudied (joint paper). Without a fallback, availability suffers or keys are bypassed.
 
   - id: B1
     category: Authentication
@@ -69,17 +85,17 @@ questions:
 
   - id: B2
     category: Authentication
-    text: Is that authentication quantum-safe (information-theoretic MACs with pre-shared keys, or PQC) and not RSA/ECDSA?
+    text: Is that authentication quantum-safe (symmetric MACs with pre-shared keys, or PQC signatures) and not RSA/ECDSA?
     expected: "yes"
     weight: 3
-    why: Authenticating a quantum-safe key exchange with breakable signatures defeats the purpose.
+    why: The joint paper lists two options, pre-shared keys with symmetric authentication or PQC signatures (which then rely on the PQC scheme). Breakable signatures defeat the purpose.
 
   - id: B3
     category: Authentication
     text: Is provisioning and refresh of the initial authentication keys documented and controlled?
     expected: "yes"
     weight: 2
-    why: QKD needs a pre-shared secret to bootstrap authentication. Its handling is a key dependency.
+    why: Pre-shared authentication keys must be distributed and periodically renewed securely before QKD can run (joint paper).
 
   - id: K1
     category: Key delivery
@@ -104,10 +120,10 @@ questions:
 
   - id: U2
     category: Key usage
-    text: Are QKD keys combined with PQC or classical keys (defense in depth), not used alone?
+    text: Are QKD keys combined with other keying (PQC hybrid or pre-shared symmetric keys), not relied on alone?
     expected: "yes"
     weight: 2
-    why: ANSSI accepts QKD only as defense-in-depth alongside classical or PQC protection.
+    why: The joint paper's clear priority is PQC in hybrid with traditional keying. Sole reliance on QKD carries its implementation and availability risks.
 
   - id: U3
     category: Key usage
@@ -121,14 +137,21 @@ questions:
     text: Has the system been independently evaluated (e.g. ISO/IEC 23837-based Common Criteria evaluation, ETSI GS QKD 016 protection profile)?
     expected: "yes"
     weight: 3
-    why: Without third-party evaluation, security claims are the vendor's own.
+    why: The joint paper says devices need rigorous evaluation because physical attacks exist. A Common Criteria protection profile (ETSI GS QKD 016, developed with BSI) and ISO/IEC 23837-1/-2 (2023) exist, but the paper says an evaluation methodology for physical attacks is still to be developed.
+
+  - id: P1
+    category: Evidence
+    text: Is the protocol's security proof published, covering finite key sizes and realistic loss and detector imperfections?
+    expected: "yes"
+    weight: 2
+    why: The joint paper says no QKD protocol has been standardised and no proof for a practically relevant protocol meets these requirements. Some commercial protocols lacked sufficient proofs and were later shown insecure.
 
   - id: E2
     category: Evidence
     text: Has the hardware had independent penetration and side-channel testing (e.g. detector-blinding attacks)?
     expected: "yes"
     weight: 2
-    why: Practical QKD attacks target implementation flaws in detectors and optics, not the protocol.
+    why: Practical attacks target implementation flaws in detectors and optics (e.g. bright-illumination attacks on commercial systems cited in the joint paper), not the protocol.
 
   - id: E3
     category: Evidence
@@ -142,7 +165,7 @@ questions:
     text: Is there a process for patching, updating or replacing the QKD hardware and firmware?
     expected: "yes"
     weight: 2
-    why: QKD is hardware-based and hard to upgrade (NSA objection). Lifecycle needs a plan.
+    why: QKD needs specialised hardware with very high life-cycle costs (joint paper) and cannot be patched like software (NSA objection, from secondary summaries). Lifecycle needs a plan.
 
   - id: O2
     category: Operations
@@ -156,4 +179,4 @@ questions:
     text: Is there a PQC migration plan for the organization regardless of QKD?
     expected: "yes"
     weight: 2
-    why: Agencies prioritize PQC. QKD is not a substitute for it.
+    why: The joint paper says the clear priority is migrating to PQC, which runs on classical hardware. QKD is not a substitute.

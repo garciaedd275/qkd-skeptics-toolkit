@@ -4,7 +4,7 @@ A toolkit for testing **claims** about quantum key distribution (QKD). It does
 not and cannot verify the physics of a QKD system; that needs independent lab
 testing. What it can check is everything around the physics:
 
-1. **Is the claim scoped and evidenced?** A scored questionnaire (19 questions,
+1. **Is the claim scoped and evidenced?** A scored questionnaire (23 questions,
    editable in `qkd_skeptics/questions.yaml`) covering claim language,
    architecture (trusted relays, fallback), authentication, key delivery,
    key usage, independent evaluation and operations. Each question states why
@@ -18,14 +18,23 @@ testing. What it can check is everything around the physics:
 
 ## Why a skeptic's toolkit
 
-The NSA does not recommend QKD for National Security Systems, citing
-dedicated hardware/fiber, trusted relays, authentication needs and limited
-upgradability. ANSSI/BSI treat it as niche, prioritizing PQC, and accept it
-only as defense-in-depth. The UK NCSC cautions against sole reliance. These
-positions are from memory of public documents (2020-era in places): verify
-current wording before citing. QKD standards referenced: ETSI GS QKD 014 (key
-delivery API), ETSI GS QKD 016 (protection profile), ISO/IEC 23837 (evaluation);
-document status varies, so check ETSI and ISO directly.
+The primary source is the joint position paper on QKD from ANSSI (France),
+BSI (Germany), NLNCSA (Netherlands) and the Swedish NCSA. It concludes that QKD
+is only usable in niche cases, is not yet mature, and that the priority should
+be migrating to post-quantum cryptography. Its main points shaped the
+questions: claims of "absolute" security never apply to real implementations;
+data encrypted with AES invalidates a claim of information-theoretic security;
+long-distance fiber and satellite QKD rely on trusted nodes; every eavesdropping
+attempt becomes a denial of service; the classical channel must be authenticated;
+and implementations need independent evaluation because physical attacks exist.
+Standards it names: ETSI GS QKD 016 (Common Criteria protection profile) and
+ISO/IEC 23837-1/-2 (2023); ETSI GS QKD 014 (key delivery API) is from other
+sources.
+
+The NSA and UK NCSC positions (the NSA does not recommend QKD for National
+Security Systems) were **not read directly**: the NSA site blocked automated
+access, so those points come from secondary summaries. Verify them against the
+originals before quoting.
 
 ## Install
 
